@@ -1,45 +1,38 @@
 package registry
 
 import (
-	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"simplerpc/client"
+	"simplerpc/codec"
 	"simplerpc/discovery"
+	"simplerpc/grpc/demo/service"
 	"simplerpc/server"
 	"sync"
 	"testing"
 	"time"
 )
 
-type Foo int
-type Args struct{ A, B int }
+type FDD int
 
-func (f *Foo) sum(args Args, rly *int) error {
-	*rly = args.A + args.B
+func (f *FDD) Shell(args service.Foo, rly *service.Foo) error {
+	//m := new(service.Foo)
+	//args.Data.UnmarshalTo(m)
+	rly.Name = "foo:" + args.Name
 	return nil
 }
-func (f *Foo) Sum(args map[int]int, rly *map[int]int) error {
 
-	var ok bool
-	if _, ok = args[0]; !ok {
-		return errors.New("no value")
-	}
-	if _, ok = args[1]; !ok {
-		return errors.New("no value")
-	}
+//func (f *FDD) Sum(args Args, rly *int) error {
+//
+//	*rly = args.A + args.B
+//	return nil
+//}
 
-	(*rly)[0] = args[0] + args[1]
-	return nil
-}
-func (f *Foo) Echo(s string, rly *string) error {
-	*rly = s
-	return nil
-}
 func startServer(registry string) {
 
-	_ = server.Registry(new(Foo))
+	_ = server.Registry(new(FDD))
 	lis, _ := net.Listen("tcp", ":0")
 
 	go Heartbeat(registry, lis.Addr().String(), 0)
@@ -65,23 +58,25 @@ func TestStartRegistryServer(t *testing.T) {
 	time.Sleep(5 * time.Second)
 
 	d := discovery.NewServerDiscovery(registry_http, time.Minute)
-	client, err := client.Dial("tcp", d)
+	client, err := client.Dial("tcp", d, &codec.Option{
+		CodecType: codec.ProtoType, MagicNumber: codec.MagicNum})
+	//client, err := client.Dial("tcp", d)
 	if err != nil {
 		t.Error(err)
 	}
+	s := []string{"a", "b", "c", "d", "e", "f", "g"}
 	for i := 0; i < 5; i++ {
 		wg.Add(1)
-		go func(num int) {
+		go func() {
 			defer wg.Done()
 
-			//args := Args{A: num, B: num * 2}
-			args := map[int]int{0: num + 1, 1: 2 * num}
-			rly := new(map[int]int)
-			if err := client.Call("Foo.Sum", args, rly); err != nil {
+			args := &service.Foo{Name: s[rand.Intn(7)]}
+			rly := new(service.Foo)
+			if err := client.Call("FDD.Shell", args, rly); err != nil {
 				t.Error(err)
 			}
-			fmt.Printf("%v+%v=%v\n", args[0], args[1], *rly)
-		}(i)
+			fmt.Printf("%v-->%v\n", args.Name, rly.Name)
+		}()
 	}
 	wg.Wait()
 

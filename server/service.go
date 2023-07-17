@@ -21,25 +21,25 @@ func (mt *MethodType) newArgv() reflect.Value {
 	return argv
 }
 func (mt *MethodType) newRlyv() reflect.Value {
-	var rlyv reflect.Value
-	rlyt := mt.rlyType.Elem()
-	switch rlyt.Kind() {
-	case reflect.Map:
-		rlyv = reflect.MakeMap(rlyt).Addr()
-	case reflect.Slice:
-		rlyv = reflect.MakeSlice(rlyt, 0, 0).Addr()
-	default:
-		rlyv = reflect.New(rlyt)
-	}
-	return rlyv
-	//rlyv := reflect.New(mt.rlyType.Elem())
-	//switch rlyv.Elem().Kind() {
+	//var rlyv reflect.Value
+	//rlyt := mt.rlyType.Elem()
+	//switch rlyt.Kind() {
 	//case reflect.Map:
-	//	rlyv.Elem().Set(reflect.MakeMap(rlyv.Elem().Type()))
+	//	rlyv = reflect.MakeMap(rlyt).Addr()
 	//case reflect.Slice:
-	//	rlyv.Elem().Set(reflect.MakeSlice(rlyv.Elem().Type(), 0, 0))
+	//	rlyv = reflect.MakeSlice(rlyt, 0, 0).Addr()
+	//default:
+	//	rlyv = reflect.New(rlyt)
 	//}
 	//return rlyv
+	rlyv := reflect.New(mt.rlyType.Elem())
+	switch rlyv.Elem().Kind() {
+	case reflect.Map:
+		rlyv.Elem().Set(reflect.MakeMap(rlyv.Elem().Type()))
+	case reflect.Slice:
+		rlyv.Elem().Set(reflect.MakeSlice(rlyv.Elem().Type(), 0, 0))
+	}
+	return rlyv
 
 }
 

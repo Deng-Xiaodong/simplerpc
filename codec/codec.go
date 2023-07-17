@@ -1,6 +1,9 @@
 package codec
 
-import "io"
+import (
+	"io"
+	"simplerpc/grpc/demo/service"
+)
 
 // 协议部分
 // 请求探头：魔数、编码方式
@@ -10,9 +13,10 @@ import "io"
 //
 
 const (
-	MagicNum      = 0x123af
-	GobType  Type = "application/gob"
-	JsonType Type = "application/json"
+	MagicNum       = 0x123af
+	GobType   Type = "application/gob"
+	JsonType  Type = "application/json"
+	ProtoType Type = "application/proto"
 )
 
 type Type = string
@@ -28,18 +32,21 @@ var DefaultOption = &Option{
 	CodecType:   GobType,
 }
 
-type Header struct {
-	ServiceMethod string
-	Seq           uint64
-	Err           string
-}
-
+//	type Header struct {
+//		ServiceMethod string
+//		Seq           uint64
+//		Err           string
+//	}
+type Header = service.Header
+type Body = service.Body
 type Codec interface {
 	io.Closer
 	ReadHeader(header *Header) error
 	ReadBody(body interface{}) error
+	//ReadBody(body *Body) error
 	WriteHeader(header *Header) error
 	WriteBody(body interface{}) error
+	//WriteBody(body *Body) error
 }
 
 var CodecFuncTable map[Type]NewCodecFunc
@@ -47,4 +54,5 @@ var CodecFuncTable map[Type]NewCodecFunc
 func init() {
 	CodecFuncTable = make(map[Type]NewCodecFunc)
 	CodecFuncTable[GobType] = NewGobCodec
+	CodecFuncTable[ProtoType] = NewProtoCodec
 }

@@ -1,0 +1,17 @@
+syntax="proto3";
+option go_package="grpc/demo/service";
+package service;
+
+import "google/protobuf/any.proto";
+message Header{
+  string ServiceMethod=1;
+  uint64 Seq=2;
+  string Err=3;
+}
+message Foo{
+  string Name=1;
+}
+
+message Body{
+  google.protobuf.Any Data=1;
+}

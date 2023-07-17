@@ -3,7 +3,6 @@ package codec
 import (
 	"bufio"
 	"encoding/gob"
-	"fmt"
 	"io"
 	"log"
 )
@@ -39,7 +38,7 @@ func (g *GobCodec) ReadHeader(header *Header) error {
 }
 
 func (g *GobCodec) ReadBody(body interface{}) error {
-	fmt.Printf("bodyT:%T", body)
+	//fmt.Printf("bodyT:%T", body)
 	err := g.dec.Decode(body)
 	if err != nil {
 		log.Println("codec error: read body err")
@@ -57,6 +56,25 @@ func (g *GobCodec) WriteHeader(header *Header) error {
 	return nil
 
 }
+
+//func (g *GobCodec) ReadBody(body *Body) error {
+//		fmt.Printf("bodyT:%T", body)
+//		err := g.dec.Decode(body)
+//		if err != nil {
+//			log.Println("codec error: read body err")
+//		}
+//		return err
+//}
+//
+//func (g *GobCodec) WriteBody(body *Body) error {
+//		defer g.buf.Flush()
+//		err := g.enc.Encode(body)
+//		if err != nil {
+//			log.Println("codec error: write body err")
+//			return err
+//		}
+//		return nil
+//}
 
 func (g *GobCodec) WriteBody(body interface{}) error {
 	defer g.buf.Flush()
